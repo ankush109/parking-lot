@@ -42,6 +42,7 @@ export class ParkingLotService {
             throw new BadRequestException("Parking Slots are full!")
         }
         const slot_number = this.availableSlots.extractMin();
+        console.log(slot_number,"slot free")
         const slot = this.slots.find((s) => s.slot_no == slot_number)
         if (!slot) throw new NotFoundException('Slot not found');
 
@@ -50,8 +51,64 @@ export class ParkingLotService {
         slot.isOccupied = true;
 
         this.availableSlots.watchHeap()
+        console.log(this.slots,"slots after cleared")
         return {
             allocated_slot_number: slot_number
         }
     }
+    getCarByColor(color:string){
+        const requestedCar = this.slots.filter((car)=>car.carColor==color)
+        if(requestedCar.length==0) throw new NotFoundException("Car with color not found!")
+        const registrationNumbers = requestedCar.map((car)=>car.carRegNo)
+        return registrationNumbers
+    }
+    getSlotsByColor(color:string){
+        const requestedCar = this.slots.filter((car)=>car.carColor==color)
+        if(requestedCar.length==0) throw new NotFoundException("Car with color not found!")
+        const registrationNumbers = requestedCar.map((car)=>car.slot_no)
+        return registrationNumbers
+    }
+    clearSlotBySlotNumber(slot_number:number){
+       const findFreeSlot = this.slots.filter((slot)=>slot.slot_no==slot_number)
+       console.log(findFreeSlot,"free")
+       console.log(this.slots,"slots before being cleared")
+       if(findFreeSlot.length==0) throw new NotFoundException("Slot is already free")
+       this.slots = this.slots.filter((val)=>{
+            return val.slot_no!=slot_number
+        })
+        this.slots.push({
+            slot_no:1,
+            isOccupied:false
+        })
+        this.availableSlots.insert(slot_number)
+        this.availableSlots.watchHeap()
+        console.log(this.slots,"slots after being cleared")
+        return {
+            reed_slot_number:slot_number
+        }
+    }
+    clearSlotByRegistrationNumber(registration_number:string){
+        const findFreeSlot = this.slots.filter((slot)=>slot.carRegNo==registration_number)
+        console.log(findFreeSlot,"free")
+        console.log(this.slots,"slots before being cleared")
+        if(findFreeSlot.length==0) throw new NotFoundException("Slot is already free")
+
+        this.slots = this.slots.filter((val)=>{
+             return val.carRegNo!=registration_number
+         })
+         this.slots.push({
+             slot_no:1,
+             isOccupied:false
+         })
+         this.availableSlots.insert(findFreeSlot[0].slot_no)
+         this.availableSlots.watchHeap()
+         console.log(this.slots,"slots after being cleared")
+         return {
+             reed_slot_number:findFreeSlot[0].slot_no
+         }
+     }
+     getAllOccupiedSlots(){
+        const occupiedSlots = this.slots.filter((slot)=>slot.isOccupied==true)
+        return occupiedSlots
+     }
 }

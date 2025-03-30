@@ -1,3 +1,4 @@
+import { IsOptional, IsNumber, IsString } from 'class-validator';
 export class CreateParkingLotDto{
     number_of_slots :number
 }
@@ -12,6 +13,17 @@ export class ExpandParkingLotDto {
   
   export class FreeSlotDto {
     slot_number?: number;
+    car_registration_no?: string;
+  }
+
+
+  export class ClearSlotDto {
+    @IsOptional()
+    @IsNumber()
+    slot_number?: number;
+  
+    @IsOptional()
+    @IsString()
     car_registration_no?: string;
   }
   
