@@ -26,6 +26,10 @@ export class ParkingLotController {
     getSlotsByColor(@Param("color") color: string) {
         return this.parkingLotService.getSlotsByColor(color)
     }
+    @Get("/duration/:reg_no")
+    getDuration(@Param("reg_no") reg_no:string){
+        return this.parkingLotService.getDurationByRegistrationNumber(reg_no)
+    }
     @Post("/clear")
     clearSlot(@Body(ValidationPipe) ClearSlotDto: ClearSlotDto) {
         if (!ClearSlotDto.slot_number && !ClearSlotDto.car_registration_no) {

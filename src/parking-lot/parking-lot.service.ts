@@ -9,7 +9,7 @@ export class ParkingLotService {
     private parkingSlots = new Map<number, ParkingSlot>();
     private availableSlots = new MinHeap();
 
-    constructor(private readonly logger: CustomLoggerService) {}  
+    constructor(private readonly logger: CustomLoggerService) { }
 
     initializeParkingSlot(createParkingSlot: CreateParkingLotDto) {
         if (this.parkingSlots.size > 0) {
@@ -29,7 +29,7 @@ export class ParkingLotService {
 
     incrementParkingSlot(expandParkingLotDto: ExpandParkingLotDto) {
         const { increment_slot } = expandParkingLotDto;
-        const currentSlotSize = this.availableSlots.size();
+        const currentSlotSize = this.parkingSlots.size;
 
         for (let i = 1; i <= increment_slot; i++) {
             const newSlotNo = currentSlotSize + i;
@@ -59,7 +59,8 @@ export class ParkingLotService {
                 slot_no: slot_number,
                 carColor: parkCarDto.car_color,
                 carRegNo: parkCarDto.car_reg_no,
-                isOccupied: true
+                isOccupied: true,
+                entryTime: new Date()
             });
         }
 
@@ -75,7 +76,7 @@ export class ParkingLotService {
             throw new NotFoundException("Car with color not found!");
         }
 
-        
+
         return requestedCars.map(car => car.carRegNo);
     }
 
@@ -87,7 +88,7 @@ export class ParkingLotService {
             throw new NotFoundException("Car with color not found!");
         }
 
-       
+
         return requestedSlots.map(slot => slot.slot_no);
     }
 
@@ -122,11 +123,22 @@ export class ParkingLotService {
         this.logger.log(`Freed slot ${slot_number} occupied by car ${registration_number}`, 'ParkingLotService');
         return { freed_slot_number: slot_number };
     }
+    getDurationByRegistrationNumber(registration_number: string) {
+        const slot = Array.from(this.parkingSlots.values()).find((slot) => slot.carRegNo == registration_number)
+        if (!slot) throw new BadRequestException("Car with given reg_no is not parked !")
+        if (!slot.entryTime) throw new BadRequestException("Entry time is not set for this car !")
+        const currentTime = new Date();
+        const durationInMilliSeconds = currentTime.getTime() - slot?.entryTime.getTime()
+        const durationInSeconds = Math.floor(durationInMilliSeconds / 1000)
+        const durationInMinutes = Math.floor(durationInSeconds / 60)
+        const durationInHours = Math.floor(durationInMinutes / 60)
+        return `${durationInHours} hrs ${durationInMinutes % 60} mins ${durationInSeconds % 60} seconds`
 
+    }
     getAllOccupiedSlots() {
         const occupiedSlots = Array.from(this.parkingSlots.values()).filter(slot => slot.isOccupied);
 
-        
+
         return occupiedSlots.map(({ slot_no, carRegNo, carColor }) => ({ slot_no, carRegNo, carColor }));
     }
 }

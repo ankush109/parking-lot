@@ -3,6 +3,7 @@ export class ParkingSlot {
     isOccupied: boolean;
     carRegNo?: string;
     carColor?: string;
+    entryTime?:Date
   }
 
   export class Car {
