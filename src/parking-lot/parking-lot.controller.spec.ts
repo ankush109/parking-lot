@@ -1,20 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ParkingLotService } from './parking-lot.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { CustomLoggerService } from '../custom-logger/custom-logger.service';
 
 describe('ParkingLotService', () => {
   let service: ParkingLotService;
+  let logger: CustomLoggerService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ParkingLotService],
+      providers: [ParkingLotService,CustomLoggerService],
     }).compile();
 
     service = module.get<ParkingLotService>(ParkingLotService);
+    logger = module.get<CustomLoggerService>(CustomLoggerService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(logger).toBeDefined()
   });
 
   it('should initialize parking slots', () => {
