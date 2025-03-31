@@ -48,7 +48,7 @@ export class ParkingLotService {
                 isOccupied: true
             });
         }
-
+        
         return { allocated_slot_number: slot_number };
     }
 

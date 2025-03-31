@@ -28,13 +28,12 @@ export class FreeSlotDto {
   car_registration_no?: string;
 }
 
-  export class ClearSlotDto {
-    @IsOptional()
-    @IsNumber()
-    slot_number?: number;
-  
-    @IsOptional()
-    @IsString()
-    car_registration_no?: string;
-  }
-  
+export class ClearSlotDto {
+  @IsOptional()
+  @IsNumber()
+  slot_number?: number;
+
+  @IsOptional()
+  @IsString()
+  car_registration_no?: string;
+}
