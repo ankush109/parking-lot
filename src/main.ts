@@ -9,6 +9,7 @@ async function bootstrap() {
     forbidNonWhitelisted: true, 
     transform: true,   
   }))
+  app.setGlobalPrefix("api")
   await app.listen(5000);
 }
 bootstrap();

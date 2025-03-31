@@ -2,21 +2,28 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { ParkingSlot } from './entities/parking-slot.entity';
 import MinHeap from './utils/min-heap';
 import { CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/create-parking-lot.dto';
+import { CustomLoggerService } from 'src/custom-logger/custom-logger.service';
 
 @Injectable()
 export class ParkingLotService {
     private parkingSlots = new Map<number, ParkingSlot>();
     private availableSlots = new MinHeap();
 
+    constructor(private readonly logger: CustomLoggerService) {}  
+
     initializeParkingSlot(createParkingSlot: CreateParkingLotDto) {
-        if(this.parkingSlots.size > 0)  throw new BadRequestException("Parking Slot has been alreay initialized !")
+        if (this.parkingSlots.size > 0) {
+            this.logger.warn('Parking Slot has already been initialized!', 'ParkingLotService');
+            throw new BadRequestException("Parking Slot has already been initialized!");
+        }
+
         const { number_of_slots } = createParkingSlot;
-        
         for (let i = 1; i <= number_of_slots; i++) {
             this.parkingSlots.set(i, { slot_no: i, isOccupied: false });
             this.availableSlots.insert(i);
         }
 
+        this.logger.log(`Initialized parking lot with ${number_of_slots} slots`, 'ParkingLotService');
         return { total_slots: this.parkingSlots.size };
     }
 
@@ -30,79 +37,96 @@ export class ParkingLotService {
             this.availableSlots.insert(newSlotNo);
         }
 
+        this.logger.log(`Expanded parking lot by ${increment_slot} slots`, 'ParkingLotService');
         return { total_slots: this.parkingSlots.size };
     }
 
-    parkCar(ParkCarDto: ParkCarDto) {
-        if(this.parkingSlots.size == 0) throw new BadRequestException("Parking Slot is not initialized !")
-        if (this.availableSlots.isEmpty()) {
-            console.log(this.parkingSlots.size)
-            throw new BadRequestException("Parking Slots are full!");
+    parkCar(parkCarDto: ParkCarDto) {
+        if (this.parkingSlots.size == 0) throw new BadRequestException("Parking Slot is not initialized!");
+        if (this.availableSlots.isEmpty()) throw new BadRequestException("Parking Slots are full!");
+
+        const alreadyCarParked = Array.from(this.parkingSlots.entries()).find(
+            ([_, val]) => val.carRegNo === parkCarDto.car_reg_no
+        );
+        if (alreadyCarParked) {
+            this.logger.warn(`Car with registration ${parkCarDto.car_reg_no} already exists!`, 'ParkingLotService');
+            throw new BadRequestException("Car with Registration number already exists!");
         }
-        const alreadyCarParked = Array.from(this.parkingSlots.entries()).find(([_,val])=>val.carRegNo==ParkCarDto.car_reg_no)
-        console.log(alreadyCarParked,"already car")
-        if(alreadyCarParked) throw new BadRequestException("Car with Registration number already exists!")
+
         const slot_number = this.availableSlots.extractMin();
-        if(slot_number){
+        if (slot_number) {
             this.parkingSlots.set(slot_number, {
                 slot_no: slot_number,
-                carColor: ParkCarDto.car_color,
-                carRegNo: ParkCarDto.car_reg_no,
+                carColor: parkCarDto.car_color,
+                carRegNo: parkCarDto.car_reg_no,
                 isOccupied: true
             });
         }
-        
+
+        this.logger.log(`Allocated slot ${slot_number} to car ${parkCarDto.car_reg_no}`, 'ParkingLotService');
         return { allocated_slot_number: slot_number };
     }
 
     getCarByColor(color: string) {
-        const requestedCars = Array.from(this.parkingSlots.values())
-            .filter(slot => slot.carColor === color);
-        
-        if (requestedCars.length === 0) throw new NotFoundException("Car with color not found!");
+        const requestedCars = Array.from(this.parkingSlots.values()).filter(slot => slot.carColor === color);
+
+        if (requestedCars.length === 0) {
+            this.logger.warn(`No cars found with color ${color}`, 'ParkingLotService');
+            throw new NotFoundException("Car with color not found!");
+        }
+
         
         return requestedCars.map(car => car.carRegNo);
     }
 
     getSlotsByColor(color: string) {
-        const requestedCars = Array.from(this.parkingSlots.values())
-            .filter(slot => slot.carColor === color);
-        
-        if (requestedCars.length === 0) throw new NotFoundException("Car with color not found!");
-        
-        return requestedCars.map(car => car.slot_no);
+        const requestedSlots = Array.from(this.parkingSlots.values()).filter(slot => slot.carColor === color);
+
+        if (requestedSlots.length === 0) {
+            this.logger.warn(`No slots found for cars with color ${color}`, 'ParkingLotService');
+            throw new NotFoundException("Car with color not found!");
+        }
+
+       
+        return requestedSlots.map(slot => slot.slot_no);
     }
 
     clearSlotBySlotNumber(slot_number: number) {
         const slot = this.parkingSlots.get(slot_number);
         if (!slot || !slot.isOccupied) {
+            this.logger.warn(`Slot ${slot_number} is already free`, 'ParkingLotService');
             throw new NotFoundException("Slot is already free");
         }
 
         this.parkingSlots.set(slot_number, { slot_no: slot_number, isOccupied: false });
         this.availableSlots.insert(slot_number);
 
+        this.logger.log(`Freed slot ${slot_number}`, 'ParkingLotService');
         return { freed_slot_number: slot_number };
     }
 
     clearSlotByRegistrationNumber(registration_number: string) {
-        const slotEntry = Array.from(this.parkingSlots.entries())
-            .find(([_, slot]) => slot.carRegNo === registration_number);
-        
+        const slotEntry = Array.from(this.parkingSlots.entries()).find(
+            ([_, slot]) => slot.carRegNo === registration_number
+        );
+
         if (!slotEntry) {
-            throw new NotFoundException("Slot is already free");
+            this.logger.warn(`Car with registration ${registration_number} not found`, 'ParkingLotService');
+            throw new NotFoundException("Car with this registration number not found");
         }
 
         const [slot_number] = slotEntry;
         this.parkingSlots.set(slot_number, { slot_no: slot_number, isOccupied: false });
         this.availableSlots.insert(slot_number);
 
+        this.logger.log(`Freed slot ${slot_number} occupied by car ${registration_number}`, 'ParkingLotService');
         return { freed_slot_number: slot_number };
     }
 
     getAllOccupiedSlots() {
-        return Array.from(this.parkingSlots.values())
-            .filter(slot => slot.isOccupied)
-            .map(({ slot_no, carRegNo, carColor }) => ({ slot_no, carRegNo, carColor }));
+        const occupiedSlots = Array.from(this.parkingSlots.values()).filter(slot => slot.isOccupied);
+
+        
+        return occupiedSlots.map(({ slot_no, carRegNo, carColor }) => ({ slot_no, carRegNo, carColor }));
     }
 }
