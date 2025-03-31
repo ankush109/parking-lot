@@ -9,6 +9,7 @@ export class ParkingLotService {
     private availableSlots = new MinHeap();
 
     initializeParkingSlot(createParkingSlot: CreateParkingLotDto) {
+        if(this.parkingSlots.size > 0)  throw new BadRequestException("Parking Slot has been alreay initialized !")
         const { number_of_slots } = createParkingSlot;
         
         for (let i = 1; i <= number_of_slots; i++) {
@@ -33,7 +34,9 @@ export class ParkingLotService {
     }
 
     parkCar(ParkCarDto: ParkCarDto) {
+        if(this.parkingSlots.size == 0) throw new BadRequestException("Parking Slot is not initialized !")
         if (this.availableSlots.isEmpty()) {
+            console.log(this.parkingSlots.size)
             throw new BadRequestException("Parking Slots are full!");
         }
         const alreadyCarParked = Array.from(this.parkingSlots.entries()).find(([_,val])=>val.carRegNo==ParkCarDto.car_reg_no)

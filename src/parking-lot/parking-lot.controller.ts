@@ -5,42 +5,45 @@ import { ClearSlotDto, CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } fr
 
 @Controller('parking-lot')
 export class ParkingLotController {
-    constructor(private readonly parkingLotService: ParkingLotService) {}
-        @Post()
-        initialize(@Body(ValidationPipe) CreateParkingLotDto: CreateParkingLotDto) {
-            return this.parkingLotService.initializeParkingSlot(CreateParkingLotDto);
-          }
-        @Patch()
-        increment(@Body(ValidationPipe) ExpandParkingLotDto:ExpandParkingLotDto){
-            return this.parkingLotService.incrementParkingSlot(ExpandParkingLotDto)
+    constructor(private readonly parkingLotService: ParkingLotService) { }
+    @Post()
+    initialize(@Body(ValidationPipe) CreateParkingLotDto: CreateParkingLotDto) {
+        return this.parkingLotService.initializeParkingSlot(CreateParkingLotDto);
+    }
+    @Patch()
+    increment(@Body(ValidationPipe) ExpandParkingLotDto: ExpandParkingLotDto) {
+        return this.parkingLotService.incrementParkingSlot(ExpandParkingLotDto)
+    }
+    @Post("park")
+    parkCar(@Body(ValidationPipe) ParkCarDto: ParkCarDto) {
+        return this.parkingLotService.parkCar(ParkCarDto)
+    }
+    @Get("/registration_numbers/:color")
+    getColor(@Param("color") color: string) {
+        return this.parkingLotService.getCarByColor(color)
+    }
+    @Get("/slot_numbers/:color")
+    getSlotsByColor(@Param("color") color: string) {
+        return this.parkingLotService.getSlotsByColor(color)
+    }
+    @Post("/clear")
+    clearSlot(@Body(ValidationPipe) ClearSlotDto: ClearSlotDto) {
+        if (!ClearSlotDto.slot_number && !ClearSlotDto.car_registration_no) {
+            throw new BadRequestException('Either slot_number or car_registration_no must be provided.');
         }
-        @Post("park")
-        parkCar(@Body(ValidationPipe) ParkCarDto:ParkCarDto){
-            return this.parkingLotService.parkCar(ParkCarDto)
+
+        if (ClearSlotDto.slot_number) {
+            return this.parkingLotService.clearSlotBySlotNumber(ClearSlotDto.slot_number);
         }
-        @Get("/registration_numbers/:color")
-        getColor(@Param("color") color:string ){
-            return this.parkingLotService.getCarByColor(color)
+        if (ClearSlotDto.car_registration_no) {
+
+            return this.parkingLotService.clearSlotByRegistrationNumber(ClearSlotDto.car_registration_no);
+
         }
-        @Get("/slot_numbers/:color")
-        getSlotsByColor(@Param("color") color:string){
-            return this.parkingLotService.getSlotsByColor(color)
-        }
-        @Post("/clear")
-        clearSlot(@Body(ValidationPipe) ClearSlotDto:ClearSlotDto){
-            if (!ClearSlotDto.slot_number && !ClearSlotDto.car_registration_no) {
-                throw new BadRequestException('Either slot_number or car_registration_no must be provided.');
-              }
-          
-              if (ClearSlotDto.slot_number) {
-                return this.parkingLotService.clearSlotBySlotNumber(ClearSlotDto.slot_number);
-              } else {
-                return this.parkingLotService.clearSlotByRegistrationNumber(ClearSlotDto.car_registration_no ? ClearSlotDto.car_registration_no :"" );
-              }
-        }
-        @Get("/status")
-        findAllOccupiedSlots(){
-            return this.parkingLotService.getAllOccupiedSlots()
-        }   
-    
+    }
+    @Get("/status")
+    findAllOccupiedSlots() {
+        return this.parkingLotService.getAllOccupiedSlots()
+    }
+
 }

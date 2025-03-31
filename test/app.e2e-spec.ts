@@ -20,6 +20,16 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect('Hello Worl!');
+  });
+  it('should initialize parking slots', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/parking-lot')
+      .send({ number_of_slots: 10 })
+      .expect(201); // Expect HTTP 201 (Created)
+
+    // Ensure response structure is correct
+    expect(response.body).toHaveProperty('total_slots');
+    expect(response.body.total_slots).toBe(10);
   });
 });
