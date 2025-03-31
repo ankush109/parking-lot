@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
 import { ParkingLotService } from './parking-lot.service';
-import { ClearSlotDto, CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/create-parking-lot.dto';
+import { ClearSlotDto, CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/parking-lot.dto';
 
 
 @Controller('parking-lot')

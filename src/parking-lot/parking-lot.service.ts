@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ParkingSlot } from './entities/parking-slot.entity';
 import MinHeap from './utils/min-heap';
-import { CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/create-parking-lot.dto';
+import { CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/parking-lot.dto';
 import { CustomLoggerService } from 'src/custom-logger/custom-logger.service';
 
 @Injectable()

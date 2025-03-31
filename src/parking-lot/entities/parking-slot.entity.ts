@@ -6,8 +6,3 @@ export class ParkingSlot {
     entryTime?:Date
   }
 
-  export class Car {
-    regNo: string;
-    color: string;
-  }
-  
