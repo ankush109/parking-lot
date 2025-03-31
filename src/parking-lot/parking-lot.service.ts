@@ -4,114 +4,100 @@ import MinHeap from './utils/min-heap';
 import { CreateParkingLotDto, ExpandParkingLotDto, ParkCarDto } from './dto/create-parking-lot.dto';
 
 @Injectable()
-
 export class ParkingLotService {
-    private slots: ParkingSlot[] = []
-    private availableSlots = new MinHeap()
+    private parkingSlots = new Map<number, ParkingSlot>();
+    private availableSlots = new MinHeap();
+
     initializeParkingSlot(createParkingSlot: CreateParkingLotDto) {
         const { number_of_slots } = createParkingSlot;
-        this.slots = Array.from({ length: number_of_slots }, (_, i) => ({
-            slot_no: i + 1,
-            isOccupied: false
-        }))
-        console.log(this.slots)
-        for (let i = 1; i <= this.slots.length; i++) {
-            this.availableSlots.insert(i)
-        }
-        return {
-            total_slots: this.slots.length
-        }
-    }
-    incrementParkingSlot(expandParkingLotDto: ExpandParkingLotDto) {
-        const { increment_slot } = expandParkingLotDto
-        const currentSlotSize = this.slots.length;
-        for (let i = 1; i <= increment_slot; i++) {
-            this.slots.push({
-                slot_no: currentSlotSize + i,
-                isOccupied: false
-            })
-            this.availableSlots.insert(currentSlotSize + i)
-        }
-        return {
-            total_slots: this.slots.length
+        
+        for (let i = 1; i <= number_of_slots; i++) {
+            this.parkingSlots.set(i, { slot_no: i, isOccupied: false });
+            this.availableSlots.insert(i);
         }
 
+        return { total_slots: this.parkingSlots.size };
     }
+
+    incrementParkingSlot(expandParkingLotDto: ExpandParkingLotDto) {
+        const { increment_slot } = expandParkingLotDto;
+        const currentSlotSize = this.availableSlots.size();
+
+        for (let i = 1; i <= increment_slot; i++) {
+            const newSlotNo = currentSlotSize + i;
+            this.parkingSlots.set(newSlotNo, { slot_no: newSlotNo, isOccupied: false });
+            this.availableSlots.insert(newSlotNo);
+        }
+
+        return { total_slots: this.parkingSlots.size };
+    }
+
     parkCar(ParkCarDto: ParkCarDto) {
         if (this.availableSlots.isEmpty()) {
-            throw new BadRequestException("Parking Slots are full!")
+            throw new BadRequestException("Parking Slots are full!");
         }
+
         const slot_number = this.availableSlots.extractMin();
-        console.log(slot_number,"slot free")
-        const slot = this.slots.find((s) => s.slot_no == slot_number)
-        if (!slot) throw new NotFoundException('Slot not found');
-
-        slot.carColor = ParkCarDto.car_color;
-        slot.carRegNo = ParkCarDto.car_reg_no;
-        slot.isOccupied = true;
-
-        this.availableSlots.watchHeap()
-        console.log(this.slots,"slots after cleared")
-        return {
-            allocated_slot_number: slot_number
+        if(slot_number){
+            this.parkingSlots.set(slot_number, {
+                slot_no: slot_number,
+                carColor: ParkCarDto.car_color,
+                carRegNo: ParkCarDto.car_reg_no,
+                isOccupied: true
+            });
         }
+
+        return { allocated_slot_number: slot_number };
     }
-    getCarByColor(color:string){
-        const requestedCar = this.slots.filter((car)=>car.carColor==color)
-        if(requestedCar.length==0) throw new NotFoundException("Car with color not found!")
-        const registrationNumbers = requestedCar.map((car)=>car.carRegNo)
-        return registrationNumbers
+
+    getCarByColor(color: string) {
+        const requestedCars = Array.from(this.parkingSlots.values())
+            .filter(slot => slot.carColor === color);
+        
+        if (requestedCars.length === 0) throw new NotFoundException("Car with color not found!");
+        
+        return requestedCars.map(car => car.carRegNo);
     }
-    getSlotsByColor(color:string){
-        const requestedCar = this.slots.filter((car)=>car.carColor==color)
-        if(requestedCar.length==0) throw new NotFoundException("Car with color not found!")
-        const registrationNumbers = requestedCar.map((car)=>car.slot_no)
-        return registrationNumbers
+
+    getSlotsByColor(color: string) {
+        const requestedCars = Array.from(this.parkingSlots.values())
+            .filter(slot => slot.carColor === color);
+        
+        if (requestedCars.length === 0) throw new NotFoundException("Car with color not found!");
+        
+        return requestedCars.map(car => car.slot_no);
     }
+
     clearSlotBySlotNumber(slot_number: number) {
-        const findFreeSlot = this.slots.find((slot) => slot.slot_no === slot_number);
-        console.log(findFreeSlot,"clearslot")
-        if (!findFreeSlot || !findFreeSlot.isOccupied) {
+        const slot = this.parkingSlots.get(slot_number);
+        if (!slot || !slot.isOccupied) {
             throw new NotFoundException("Slot is already free");
         }
-        this.slots = this.slots.filter((val)=>{
-            return val.slot_no!=slot_number
-        })
-        this.slots.push({
-            slot_no:slot_number,
-            isOccupied:false
-        })
-        findFreeSlot.isOccupied = false;
-        delete findFreeSlot.carRegNo;
-        delete findFreeSlot.carColor;
+
+        this.parkingSlots.set(slot_number, { slot_no: slot_number, isOccupied: false });
         this.availableSlots.insert(slot_number);
-    
+
         return { freed_slot_number: slot_number };
     }
-    
-    clearSlotByRegistrationNumber(registration_number:string){
-        const findFreeSlot = this.slots.find((slot) => slot.carRegNo === registration_number);
-        console.log(findFreeSlot,"clearslot")
-        if (!findFreeSlot || !findFreeSlot.isOccupied) {
+
+    clearSlotByRegistrationNumber(registration_number: string) {
+        const slotEntry = Array.from(this.parkingSlots.entries())
+            .find(([_, slot]) => slot.carRegNo === registration_number);
+        
+        if (!slotEntry) {
             throw new NotFoundException("Slot is already free");
         }
-    
-        this.slots = this.slots.filter((val)=>{
-             return val.carRegNo!=registration_number
-         })
-         this.slots.push({
-             slot_no:findFreeSlot.slot_no,
-             isOccupied:false
-         })
-         this.availableSlots.insert(findFreeSlot[0].slot_no)
-         this.availableSlots.watchHeap()
-         console.log(this.slots,"slots after being cleared")
-         return {
-             freed_slot_number:findFreeSlot[0].slot_no
-         }
-     }
-     getAllOccupiedSlots(){
-        const occupiedSlots = this.slots.filter((slot)=>slot.isOccupied==true)
-        return occupiedSlots
-     }
+
+        const [slot_number] = slotEntry;
+        this.parkingSlots.set(slot_number, { slot_no: slot_number, isOccupied: false });
+        this.availableSlots.insert(slot_number);
+
+        return { freed_slot_number: slot_number };
+    }
+
+    getAllOccupiedSlots() {
+        return Array.from(this.parkingSlots.values())
+            .filter(slot => slot.isOccupied)
+            .map(({ slot_no, carRegNo, carColor }) => ({ slot_no, carRegNo, carColor }));
+    }
 }

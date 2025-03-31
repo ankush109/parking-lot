@@ -1,7 +1,10 @@
 class MinHeap {
     private heap: number[] = [];
     watchHeap(){
-        console.log(this.heap,"heap..")
+        console.log(this.heap,"current heap look like this.....")
+    }
+    size(){
+      return this.heap.length
     }
     insert(value: number) {
       this.heap.push(value);
