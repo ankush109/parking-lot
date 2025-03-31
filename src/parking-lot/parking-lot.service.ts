@@ -36,7 +36,9 @@ export class ParkingLotService {
         if (this.availableSlots.isEmpty()) {
             throw new BadRequestException("Parking Slots are full!");
         }
-
+        const alreadyCarParked = Array.from(this.parkingSlots.entries()).find(([_,val])=>val.carRegNo==ParkCarDto.car_reg_no)
+        console.log(alreadyCarParked,"already car")
+        if(alreadyCarParked) throw new BadRequestException("Car with Registration number already exists!")
         const slot_number = this.availableSlots.extractMin();
         if(slot_number){
             this.parkingSlots.set(slot_number, {
