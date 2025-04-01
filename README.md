@@ -15,6 +15,14 @@ docker run -it -p 5000:5000  nestjs-app
 
 ```
 
+How to run the tests 
+
+```sh
+npm test
+
+```
+
+
 ``` 
  1. Initialize the parking Slot :
 
