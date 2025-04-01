@@ -38,6 +38,9 @@ npm test
 
 ```
 
+Download the postman collection to test out the application -> https://drive.google.com/file/d/1v99PrL4Czz7io4brd8lQh2hu106CJynp/view?usp=sharing
+
+
 
 ``` 
  1. Initialize the parking Slot :
