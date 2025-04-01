@@ -66,35 +66,8 @@ Request Body : {
 
 8. Duration of a car by registration number : 
 
-GET : http://localhost:5000/api/parking-lot/duration/WB012024        
+GET : http://localhost:5000/api/parking-lot/duration/WB012024
+
+                 
 
 ```
-
-My implementation : 
-
- 1. Used Min heap as its the most optimized way to get the nearest available parking slot
- 2. Used map to store the parking slot to its parked car details < 1: { reg_no :"XXX" , car_color:"red" } > [ better than array as its 0(1) lookup ]
- 3. Used functional and object oriented way keeping in mind reusablity of function , using helper functions to reuse function in the overall code base )   
- 4. Have written unit test in service leven and controller level (e2e test cases) to test the functionality works as expected .
- 5. Added a duration feature to check the duration of a car parked in a particular slot 
- 6. Dockerized the app 
- 7. Deployed the application in render 
- 8. Have done some validation checks at each service level for eg : if the reg_no exits or not , if parking slot has already been initialized ....
- 9. Have used custom logger to log and write those in a excel file ( extending base console Logger class ) for adding our custom functionality 
- 10. Used a global execptions filter to catch and normalize the errors adding any extra property if needed 
- 
-
-
-
-So, Why I used heap I could have used a sorted array which would give the same results right the nearest available slot but in that case I would have to sort it every time i insert or remove the available slots haivng a time complexity of n(logn) where as in heap its logn for insertion and deletion so its much more effecient than using a array.
-
-
-
-
-
-
-
-
-
-
-
