@@ -20,10 +20,10 @@ export class ParkingLotService {
         }
     }
 
-    private getCarByRegistrationNo(registration_number: string) {
-        return Array.from(this.parkingSlots.entries()).find(
-            ([_, slot]) => slot.carRegNo === registration_number
-        );
+    private getSlotNumberByRegNo(registration_number: string) {
+        return Array.from(this.parkingSlots.values()).find(
+            (slot) => slot.carRegNo === registration_number
+        )?.slot_no;
     }
 
     initializeParkingSlot(createParkingSlot: CreateParkingLotDto) {
@@ -54,7 +54,7 @@ export class ParkingLotService {
         
         if (this.availableSlots.isEmpty())  throw new BadRequestException("Parking Slots are full!");
 
-        const alreadyCarParked = this.getCarByRegistrationNo(parkCarDto.car_reg_no);
+        const alreadyCarParked = this.getSlotNumberByRegNo(parkCarDto.car_reg_no);
         if (alreadyCarParked) {
             this.logger.warn(`Car with registration ${parkCarDto.car_reg_no} already exists!`, SERVICE_NAME);
             throw new BadRequestException("Car with Registration number already exists!");
@@ -115,14 +115,15 @@ export class ParkingLotService {
     }
 
     clearSlotByRegistrationNumber(registrationNumber: string) {
-        const slotEntry = this.getCarByRegistrationNo(registrationNumber);
-
+        console.log(this.parkingSlots,"this.parking slots")
+        const slotEntry = this.getSlotNumberByRegNo(registrationNumber);
+        console.log(slotEntry,"slot entry.....")
         if (!slotEntry) {
             this.logger.warn(`Car with registration ${registrationNumber} not found`, SERVICE_NAME);
             throw new NotFoundException("Car with this registration number not found");
         }
 
-        const [slotNumber] = slotEntry;
+        const slotNumber = slotEntry;
         this.parkingSlots.set(slotNumber, { slot_no: slotNumber, isOccupied: false });
         this.availableSlots.insert(slotNumber);
 
