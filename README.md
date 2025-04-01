@@ -1,5 +1,7 @@
 # Parking Lot System 
 
+LIVE URL : https://parking-lot-3ayw.onrender.com/api ( can be slow as deployed on a free service in Render )
+
 Build the image 
 
 ```sh
