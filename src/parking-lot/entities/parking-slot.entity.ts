@@ -3,6 +3,6 @@ export class ParkingSlot {
     isOccupied: boolean;
     carRegNo?: string;
     carColor?: string;
+    type? : "car" | "bike"
     entryTime?:Date
-  }
-
+  }  

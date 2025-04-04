@@ -15,7 +15,7 @@ export class ParkingLotController {
         return this.parkingLotService.incrementParkingSlot(ExpandParkingLotDto)
     }
     @Post("park")
-    parkCar(@Body(ValidationPipe) ParkCarDto: ParkCarDto) {
+    parkCar(@Body() ParkCarDto: ParkCarDto) {
         return this.parkingLotService.parkCar(ParkCarDto)
     }
     @Get("/registration_numbers/:color")
@@ -26,25 +26,25 @@ export class ParkingLotController {
     getSlotsByColor(@Param("color") color: string) {
         return this.parkingLotService.getSlotsByColor(color)
     }
-    @Get("/duration/:reg_no")
-    getDuration(@Param("reg_no") reg_no:string){
-        return this.parkingLotService.getDurationByRegistrationNumber(reg_no)
-    }
-    @Post("/clear")
-    clearSlot(@Body(ValidationPipe) ClearSlotDto: ClearSlotDto) {
-        if (!ClearSlotDto.slot_number && !ClearSlotDto.car_registration_no) {
-            throw new BadRequestException('Either slot_number or car_registration_no must be provided.');
-        }
+    // @Get("/duration/:reg_no")
+    // getDuration(@Param("reg_no") reg_no:string){
+    //     return this.parkingLotService.getDurationByRegistrationNumber(reg_no)
+    // }
+    // @Post("/clear")
+    // clearSlot(@Body(ValidationPipe) ClearSlotDto: ClearSlotDto) {
+    //     if (!ClearSlotDto.slot_number && !ClearSlotDto.car_registration_no) {
+    //         throw new BadRequestException('Either slot_number or car_registration_no must be provided.');
+    //     }
 
-        if (ClearSlotDto.slot_number) {
-            return this.parkingLotService.clearSlotBySlotNumber(ClearSlotDto.slot_number);
-        }
-        if (ClearSlotDto.car_registration_no) {
+    //     if (ClearSlotDto.slot_number) {
+    //         return this.parkingLotService.clearSlotBySlotNumber(ClearSlotDto.slot_number);
+    //     }
+    //     if (ClearSlotDto.car_registration_no) {
 
-            return this.parkingLotService.clearSlotByRegistrationNumber(ClearSlotDto.car_registration_no);
+    //         return this.parkingLotService.clearSlotByRegistrationNumber(ClearSlotDto.car_registration_no);
 
-        }
-    }
+    //     }
+    // }
     @Get("/status")
     findAllOccupiedSlots() {
         return this.parkingLotService.getAllOccupiedSlots()

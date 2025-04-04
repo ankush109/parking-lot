@@ -14,6 +14,7 @@ export class ExpandParkingLotDto {
 export class ParkCarDto {
   @IsString()
   car_reg_no: string;
+  vehicleType : string
 
   @IsString()
   car_color: string;

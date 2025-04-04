@@ -10,7 +10,15 @@ class MinHeap {
       this.heap.push(value);
       this.bubbleUp();
     }
+    getNearest(clear=0){
+      if (this.heap.length === 0) return null;
+      if (this.heap.length === 1) return this.heap.pop() ?? null; 
   
+      const min = this.heap[0];
+    
+  
+      return min;
+    }
     extractMin(): number | null {
         if (this.heap.length === 0) return null;
         if (this.heap.length === 1) return this.heap.pop() ?? null; 

@@ -9,7 +9,7 @@ import { CustomLoggerModule } from './custom-logger/custom-logger.module';
   imports: [ParkingLotModule,
     ThrottlerModule.forRoot([{
       ttl:60000,
-      limit:3
+      limit:300000
     }]),
     CustomLoggerModule
   ],
